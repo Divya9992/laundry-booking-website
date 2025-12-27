@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Book Laundry</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #f0f4f8;
+      font-family: 'Poppins', sans-serif;
+    }
+    .booking-card {
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .booking-card h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+    }
+    .booking-card input,
+    .booking-card select {
+      margin-bottom: 15px;
+      height: 45px;
+      border-radius: 10px;
+      padding-left: 15px;
+    }
+    .btn-book {
+      width: 100%;
+      height: 50px;
+      border-radius: 10px;
+      border: none;
+      background: #4CAF50;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .btn-book:hover {
+      background: #45a049;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="booking-card">
+  <h2>Book Your Laundry</h2>
+
+  <input type="text" id="name" class="form-control" placeholder="Your Name">
+  <input type="tel" id="mobile" class="form-control" placeholder="Mobile Number">
+
+  <select id="service" class="form-select">
+    <option value="">Select Service</option>
+    <option value="Wash">Wash</option>
+    <option value="Wash & Iron">Wash & Iron</option>
+    <option value="Dry Clean">Dry Clean</option>
+  </select>
+
+  <label>Delivery Date</label>
+  <input type="date" id="deliveryDate" class="form-control">
+
+  <label>Delivery Time</label>
+  <input type="time" id="deliveryTime" class="form-control">
+
+  <button class="btn-book" onclick="bookLaundry()">Book Now</button>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+  // 🔥 Firebase Config
+  var firebaseConfig = {
+    apiKey: "AIzaSyA2y_ligs_fh3wTiACBCtC2nD-ZHRNGAA4",
+    authDomain: "laundrybookingapp-81530.firebaseapp.com",
+    databaseURL: "https://laundrybookingapp-81530-default-rtdb.firebaseio.com",
+    projectId: "laundrybookingapp-81530",
+    storageBucket: "laundrybookingapp-81530.appspot.com",
+    messagingSenderId: "939691323210",
+    appId: "1:939691323210:web:fb24301c4e338092341bb3"
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  var bookingRef = firebase.database().ref("LaundryBookings");
+
+  function bookLaundry() {
+    var name = document.getElementById("name").value;
+    var mobile = document.getElementById("mobile").value;
+    var service = document.getElementById("service").value;
+    var deliveryDate = document.getElementById("deliveryDate").value;
+    var deliveryTime = document.getElementById("deliveryTime").value;
+
+    if(name==="" || mobile==="" || service==="" || deliveryDate==="" || deliveryTime===""){
+      alert("Please fill all details");
+      return;
+    }
+
+    // ✅ Booking Date & Time
+    var now = new Date();
+    var bookingDate = now.getFullYear() + "-" +
+                      String(now.getMonth()+1).padStart(2,'0') + "-" +
+                      String(now.getDate()).padStart(2,'0');
+
+    var bookingTime = now.toLocaleTimeString();
+
+    // ✅ Order ID
+    var orderId = "ORD" + Date.now();
+
+    // ✅ Save to Firebase
+    bookingRef.push({
+      orderId: orderId,
+      customerName: name,
+      phoneNumber: mobile,
+      serviceType: service,
+      bookingDate: bookingDate,
+      bookingTime: bookingTime,
+      deliveryDate: deliveryDate,
+      deliveryTime: deliveryTime,
+      deliveryStatus: "Pending"
+    });
+
+    alert("Laundry Booked Successfully!\nYour Order ID: " + orderId);
+
+    // Clear form
+    document.getElementById("name").value = "";
+    document.getElementById("mobile").value = "";
+    document.getElementById("service").value = "";
+    document.getElementById("deliveryDate").value = "";
+    document.getElementById("deliveryTime").value = "";
+  }
+</script>
+<script src="script(1).js"></script>
+</body>
+</html>
