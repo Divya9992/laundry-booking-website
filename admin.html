@@ -7,15 +7,15 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 </head>
-
 <body>
-<div class="container mt-5">
 
+<div class="container mt-5">
   <div class="d-flex justify-content-between mb-3">
     <h2>All Bookings</h2>
     <button class="btn btn-danger" onclick="logout()">Logout</button>
   </div>
 
+  <!-- Bookings Table -->
   <div class="card mb-4 p-3">
     <div class="table-responsive">
       <table class="table table-bordered" id="bookingTable">
@@ -28,7 +28,7 @@
             <th>Booking Time</th>
             <th>Delivery Date</th>
             <th>Delivery Time</th>
-            <th>Delivery Status</th> <!-- ✅ NEW -->
+            <th>Delivery Status</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -36,28 +36,29 @@
     </div>
   </div>
 
+  <!-- Service Popularity -->
   <div class="card mb-4 p-3">
     <h3>Service Popularity</h3>
     <canvas id="pieChart"></canvas>
   </div>
 
+  <!-- Daily Bookings -->
   <div class="card mb-4 p-3">
     <h3>Daily Bookings</h3>
     <canvas id="dailyChart"></canvas>
   </div>
-
 </div>
 
 <script>
 /* ---------------- LOGIN CHECK ---------------- */
-if(localStorage.getItem("adminLoggedIn")!=="true"){
+if(localStorage.getItem("isLoggedIn")!=="true"){
   alert("Please login first!");
   window.location.href="admin-login.html";
 }
 
 function logout(){
   localStorage.removeItem("isLoggedIn");
-  window.location.href="login.html";
+  window.location.href="admin-login.html";
 }
 
 /* ---------------- FIREBASE ---------------- */
@@ -86,4 +87,58 @@ bookingRef.on("value", function(snapshot){
     var d = child.val();
     var id = child.key;
 
-Cancel changes
+    var row = tbody.insertRow();
+    row.insertCell(0).innerText = d.customerName;
+    row.insertCell(1).innerText = d.phoneNumber;
+    row.insertCell(2).innerText = d.serviceType;
+    row.insertCell(3).innerText = d.bookingDate;
+    row.insertCell(4).innerText = d.bookingTime;
+    row.insertCell(5).innerText = d.deliveryDate || "";
+    row.insertCell(6).innerText = d.deliveryTime || "";
+
+    // Delivery status dropdown
+    row.insertCell(7).innerHTML = `
+      <select class="form-select" onchange="updateStatus('${id}', this.value)">
+        <option value="Pending" ${d.deliveryStatus=="Pending"?"selected":""}>Pending</option>
+        <option value="In Progress" ${d.deliveryStatus=="In Progress"?"selected":""}>In Progress</option>
+        <option value="Ready" ${d.deliveryStatus=="Ready"?"selected":""}>Ready</option>
+        <option value="Delivered" ${d.deliveryStatus=="Delivered"?"selected":""}>Delivered</option>
+      </select>
+    `;
+
+    serviceCount[d.serviceType] = (serviceCount[d.serviceType]||0)+1;
+    dailyCount[d.bookingDate] = (dailyCount[d.bookingDate]||0)+1;
+  });
+
+  // Pie chart
+  if(window.pie) window.pie.destroy();
+  window.pie = new Chart(document.getElementById("pieChart"),{
+    type:"pie",
+    data:{
+      labels:Object.keys(serviceCount),
+      datasets:[{data:Object.values(serviceCount),backgroundColor:["#FF6384","#36A2EB","#FFCE56"]}]
+    }
+  });
+
+  // Daily bar chart
+  if(window.dailyChart) window.dailyChart.destroy();
+  window.dailyChart = new Chart(document.getElementById("dailyChart"),{
+    type:"bar",
+    data:{
+      labels:Object.keys(dailyCount),
+      datasets:[{label:"Bookings per day",data:Object.values(dailyCount),backgroundColor:"#4CAF50"}]
+    },
+    options:{scales:{y:{beginAtZero:true,stepSize:1}}}
+  });
+});
+
+/* ---------------- UPDATE DELIVERY STATUS ---------------- */
+function updateStatus(id, status){
+  firebase.database().ref("LaundryBookings/"+id).update({
+    deliveryStatus: status
+  });
+}
+</script>
+
+</body>
+</html>
