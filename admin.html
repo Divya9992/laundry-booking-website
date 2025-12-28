@@ -50,9 +50,9 @@
 
 <script>
 /* ---------------- LOGIN CHECK ---------------- */
-if(localStorage.getItem("isLoggedIn")!=="true"){
+if(localStorage.getItem("adminLoggedIn")!=="true"){
   alert("Please login first!");
-  window.location.href="login.html";
+  window.location.href="admin-login.html";
 }
 
 function logout(){
