@@ -59,8 +59,8 @@
 
     firebase.auth().signInWithEmailAndPassword(email, password)
       .then((userCredential) => {
-        localStorage.setItem("isLoggedIn","true"); // mark as logged in
-        window.location.href = "admin.html";       // redirect to admin page
+        localStorage.setItem("adminLoggedIn","true"); // mark as logged in
+        window.location.href = "admin-login.html.html";       // redirect to admin page
       })
       .catch((error) => {
         alert(error.message); // show error if wrong
